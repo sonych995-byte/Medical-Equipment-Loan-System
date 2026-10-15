@@ -73,3 +73,17 @@
 4. คลิก `บันทึกการคืน` และพิมพ์แบบส่งคืน (ถ้าต้องการ)
 
 ## โครงสร้างโปรเจกต์
+
+.
+├── Code.gs # โค้ด Backend สำหรับจัดการข้อมูล, เข้ารหัส, และเชื่อมต่อ Google Services
+└── Index.html # โค้ด Frontend สำหรับแสดงผล UI และจัดการฟอร์มด้วย Vue.js
+
+
+## การมีส่วนร่วม
+
+หากต้องการปรับปรุงหรือแก้ไขระบบ สามารถ Fork โปรเจกต์นี้และส่ง Pull Request ได้ที่:
+[https://github.com/sonych995-byte/Medical-Equipment-Loan-System](https://github.com/sonych995-byte/Medical-Equipment-Loan-System)
+
+## License
+
+ไม่ได้ระบุไว้ในโปรเจกต์ (โปรดตรวจสอบไฟล์ใน Repository อีกครั้ง)
