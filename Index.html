@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบยืมครุภัณฑ์ทางการแพทย์ | โรงพยาบาลบ่อพลอย</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Sarabun + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Vue 3 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+
+  <style>
+    /* ============================================================
+       CSS Variables — ธีมสีและค่าคงที่
+       ============================================================ */
+    :root {
+      /* สีหลัก — Gradient Blue to Teal */
+      --primary-start: #1a73e8;
+      --primary-end: #0d9488;
+      --primary-gradient: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-end) 100%);
+      
+      /* สีรอง */
+      --secondary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --success-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      --warning-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+      --danger-gradient: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+      --info-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+      
+      /* สีพื้นหลัง */
+      --bg-body: #f0f4f8;
+      --bg-card: #ffffff;
+      --bg-light: #f8fafc;
+      
+      /* สีข้อความ */
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      
+      /* ขอบและเงา */
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+      --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
+      
+      /* ขนาด */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      
+      /* Transition */
+      --transition-fast: 0.15s ease;
+      --transition-base: 0.3s ease;
+      --transition-slow: 0.5s ease;
+    }
+
+    /* ============================================================
+       Base Styles
+       ============================================================ */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ============================================================
+       Card Styles
+       ============================================================ */
+    .card {
+      border: none;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      background: var(--bg-card);
+      transition: box-shadow var(--transition-base);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-header {
+      background: var(--primary-gradient);
+      color: white;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+      padding: 1.25rem 1.5rem;
+      border: none;
+    }
+
+    .card-header h4, .card-header h5 {
+      color: white;
+      margin: 0;
+    }
+
+    /* ============================================================
+       Gradient Utilities
+       ============================================================ */
+    .bg-gradient-primary { background: var(--primary-gradient) !important; }
+    .bg-gradient-secondary { background: var(--secondary-gradient) !important; }
+    .bg-gradient-success { background: var(--success-gradient) !important; }
+    .bg-gradient-warning { background: var(--warning-gradient) !important; }
+    .bg-gradient-danger { background: var(--danger-gradient) !important; }
+    .bg-gradient-info { background: var(--info-gradient) !important; }
+
+    /* ============================================================
+       Button Styles
+       ============================================================ */
+    .btn {
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      transition: all var(--transition-base);
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+
+    .btn:hover::after {
+      opacity: 1;
+    }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 115, 232, 0.45);
+    }
+
+    .btn-success {
+      background: var(--success-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+    }
+
+    .btn-warning {
+      background: var(--warning-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+    }
+
+    .btn-warning:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(217, 119, 6, 0.45);
+    }
+
+    .btn-danger {
+      background: var(--danger-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.45);
+    }
+
+    .btn-info {
+      background: var(--info-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    .btn-info:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline-primary {
+      border: 2px solid var(--primary-start);
+      color: var(--primary-start);
+      background: transparent;
+    }
+
+    .btn-outline-primary:hover {
+      background: var(--primary-gradient);
+      color: white;
+      border-color: transparent;
+    }
+
+    /* ============================================================
+       Form Styles
+       ============================================================ */
+    .form-label {
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.625rem 0.875rem;
+      font-size: 0.95rem;
+      transition: all var(--transition-base);
+      background-color: var(--bg-light);
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-start);
+      box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+      background-color: white;
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* ============================================================
+       Table Styles
+       ============================================================ */
+    .table {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 0;
+    }
+
+    .table thead th {
+      background: var(--primary-gradient);
+      color: white;
+      font-weight: 500;
+      border: none;
+      padding: 0.875rem 1rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .table tbody td {
+      padding: 0.875rem 1rem;
+      vertical-align: middle;
+      border-color: var(--border-color);
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: rgba(26, 115, 232, 0.04);
+    }
+
+    /* ============================================================
+       Image Upload Box
+       ============================================================ */
+    .image-upload-box {
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      background: var(--bg-light);
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .image-upload-box:hover {
+      border-color: var(--primary-start);
+      background: rgba(26, 115, 232, 0.04);
+      transform: scale(1.01);
+    }
+
+    .image-preview {
+      max-width: 100%;
+      max-height: 260px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      object-fit: contain;
+    }
+
+    /* ============================================================
+       Nav Tabs
+       ============================================================ */
+    .nav-tabs {
+      border-bottom: 2px solid var(--border-color);
+      gap: 0.5rem;
+    }
+
+    .nav-tabs .nav-link {
+      border: none;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      color: var(--text-secondary);
+      font-weight: 500;
+      padding: 0.75rem 1.25rem;
+      transition: all var(--transition-base);
+      position: relative;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: var(--primary-start);
+      background: rgba(26, 115, 232, 0.04);
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--primary-start);
+      background: transparent;
+      font-weight: 600;
+    }
+
+    .nav-tabs .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary-gradient);
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* ============================================================
+       Badge Styles
+       ============================================================ */
+    .badge {
+      padding: 0.4em 0.75em;
+      font-weight: 500;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+
+    .badge.bg-warning {
+      background: var(--warning-gradient) !important;
+      color: white !important;
+    }
+
+    .badge.bg-success {
+      background: var(--success-gradient) !important;
+      color: white !important;
+    }
+
+    /* ============================================================
+       Modal Styles
+       ============================================================ */
+    .modal-content {
+      border: none;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      border: none;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .modal-header.bg-primary {
+      background: var(--primary-gradient) !important;
+    }
+
+    .modal-header.bg-info {
+      background: var(--info-gradient) !important;
+    }
+
+    .modal-header.bg-warning {
+      background: var(--warning-gradient) !important;
+      color: white !important;
+    }
+
+    .modal-header.bg-success {
+      background: var(--success-gradient) !important;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+      background: var(--bg-light);
+    }
+
+    /* ============================================================
+       Loading Spinner
+       ============================================================ */
+    .spinner-border {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-width: 0.25em;
+    }
+
+    /* ============================================================
+       Footer Styles
+       ============================================================ */
+    .footer {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: #94a3b8;
+      padding: 2rem 0;
+      margin-top: auto;
+    }
+
+    .footer a {
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color var(--transition-base);
+    }
+
+    .footer a:hover {
+      color: #38bdf8;
+    }
+
+    .footer .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.05);
+      transition: all var(--transition-base);
+    }
+
+    .footer .github-link:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+
+    /* ============================================================
+       Animations
+       ============================================================ */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    /* ============================================================
+       Print Styles
+       ============================================================ */
+    .print-area {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 100%;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 13pt;
+      }
+      body * {
+        visibility: hidden;
+      }
+      .print-area, .print-area * {
+        visibility: visible;
+      }
+      .print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      @page {
+        size: A4;
+        margin: 1cm;
+      }
+    }
+
+    /* ============================================================
+       Responsive
+       ============================================================ */
+    @media (max-width: 768px) {
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      
+      .card-body {
+        padding: 1rem;
+      }
+      
+      .btn-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       Vue Error Message
+       ============================================================ -->
+  <div id="vue-error-msg" style="display:none; padding:20px; background:linear-gradient(135deg, #fef2f2, #fee2e2); color:#991b1b; border-radius:12px; margin:20px; font-family:'Sarabun',sans-serif; border:1px solid #fecaca;">
+    <h4><i class="fas fa-exclamation-triangle"></i> ไม่สามารถโหลด Vue.js ได้</h4>
+    <p>สาเหตุที่เป็นไปได้:</p>
+    <ul>
+      <li>Ad Blocker หรือ Antivirus บล็อก CDN → <strong>ลองปิดชั่วคราวแล้วโหลดใหม่</strong></li>
+      <li>เครือข่ายของโรงพยาบาลบล็อก CDN ภายนอก → <strong>แจ้ง IT เพื่อปลดล็อก</strong></li>
+      <li>ไม่มีอินเทอร์เน็ต</li>
+    </ul>
+    <p>ลองรีเฟรชหน้าเว็บ หรือเปลี่ยนเบราว์เซอร์</p>
+  </div>
+
+  <!-- ============================================================
+       Main App
+       ============================================================ -->
+  <div id="app" class="d-flex flex-column min-vh-100">
+    
+    <div class="container py-4 flex-grow-1">
+      
+      <!-- ============================================================
+           Navigation Tabs
+           ============================================================ -->
+      <ul class="nav nav-tabs mb-4 no-print fade-in-up">
+        <li class="nav-item">
+          <a class="nav-link" :class="{ active: currentView === 'form' }" href="#" @click.prevent="currentView = 'form'">
+            <i class="fas fa-edit me-2"></i>ฟอร์มยืมครุภัณฑ์
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" :class="{ active: currentView === 'report' }" href="#" @click.prevent="loadReport">
+            <i class="fas fa-list-alt me-2"></i>รายงานการยืม
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" :class="{ active: currentView === 'return' }" href="#" @click.prevent="loadReturnPage">
+            <i class="fas fa-undo-alt me-2"></i>ส่งคืนครุภัณฑ์
+          </a>
+        </li>
+      </ul>
+
+      <!-- ============================================================
+           VIEW 1: ฟอร์มยืม
+           ============================================================ -->
+      <div v-show="currentView === 'form'" class="fade-in-up">
+        <div class="card mb-4 no-print">
+          <div class="card-header text-center py-4">
+            <h3 class="mb-1"><i class="fas fa-hospital me-2"></i>โรงพยาบาลบ่อพลอย จังหวัดกาญจนบุรี</h3>
+            <h5 class="mb-0 fw-light">ใบยืมครุภัณฑ์ทางการแพทย์</h5>
+          </div>
+          <div class="card-body p-4">
+            
+            <!-- ข้อมูลผู้ป่วยและผู้ยืม -->
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-user-injured me-1 text-primary"></i>ชื่อ-นามสกุลผู้ป่วย</label>
+                <input type="text" class="form-control" v-model="form.patientName" placeholder="ระบุชื่อ-นามสกุลผู้ป่วย">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-id-badge me-1 text-primary"></i>รหัสผู้ป่วย (HN)</label>
+                <input type="text" class="form-control" v-model="form.hn" placeholder="ระบุรหัส HN">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-user me-1 text-primary"></i>ชื่อ-นามสกุลผู้ยืม</label>
+                <input type="text" class="form-control" v-model="form.borrowerName" placeholder="ระบุชื่อ-นามสกุลผู้ยืม">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-heart me-1 text-primary"></i>ความสัมพันธ์กับผู้ป่วย</label>
+                <select class="form-select" v-model="form.relationship">
+                  <option value="">-- เลือกความสัมพันธ์ --</option>
+                  <option v-for="rel in relationships" :key="rel" :value="rel">{{ rel }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-map-marker-alt me-1 text-primary"></i>ที่อยู่</label>
+                <input type="text" class="form-control" v-model="form.address" placeholder="ระบุที่อยู่">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-phone me-1 text-primary"></i>เบอร์โทรศัพท์ผู้ยืม</label>
+                <input type="text" class="form-control" v-model="form.phone" @input="formatPhone" placeholder="เช่น 123 456 7890">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- รูปบัตรประชาชน -->
+            <h6 class="mb-3"><i class="fas fa-id-card me-2 text-primary"></i>รูปบัตรประชาชน</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">บัตรประชาชนผู้ป่วย</label>
+                <div class="image-upload-box" @click="triggerFileInput('patient')">
+                  <input type="file" ref="patientFileInput" accept="image/*"
+                         :capture="isMobile ? 'environment' : null"
+                         @change="onFileSelect($event, 'patient')" style="display: none;">
+                  <div v-if="!form.patientIdImage">
+                    <i class="fas fa-camera fa-3x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">{{ isMobile ? 'แตะเพื่อถ่ายรูป' : 'คลิกเพื่อเลือกรูป' }}</p>
+                  </div>
+                  <div v-else class="position-relative">
+                    <img :src="form.patientIdImage" class="image-preview">
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                            @click.stop="clearImage('patient')" type="button" style="width:32px;height:32px;padding:0;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">บัตรประชาชนผู้ยืม</label>
+                <div class="image-upload-box" @click="triggerFileInput('borrower')">
+                  <input type="file" ref="borrowerFileInput" accept="image/*"
+                         :capture="isMobile ? 'environment' : null"
+                         @change="onFileSelect($event, 'borrower')" style="display: none;">
+                  <div v-if="!form.borrowerIdImage">
+                    <i class="fas fa-camera fa-3x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">{{ isMobile ? 'แตะเพื่อถ่ายรูป' : 'คลิกเพื่อเลือกรูป' }}</p>
+                  </div>
+                  <div v-else class="position-relative">
+                    <img :src="form.borrowerIdImage" class="image-preview">
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                            @click.stop="clearImage('borrower')" type="button" style="width:32px;height:32px;padding:0;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- ปุ่มเพิ่มรายการ -->
+            <div class="text-center mb-3">
+              <button class="btn btn-primary btn-lg" @click="openModal">
+                <i class="fas fa-plus-circle me-2"></i>เพิ่มรายการครุภัณฑ์ที่ต้องการยืม
+              </button>
+            </div>
+
+            <!-- ตารางรายการที่เลือก -->
+            <div v-if="selectedItems.length > 0" class="table-responsive mt-3">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>ลำดับ</th>
+                    <th>รายการ</th>
+                    <th>จำนวน</th>
+                    <th>อัตราค่ามัดจำ (บาท)</th>
+                    <th>เลขครุภัณฑ์</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in selectedItems" :key="item.id">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>{{ item.price * item.qty }}</td>
+                    <td>{{ item.equipmentNumbers.join(', ') }}</td>
+                    <td>
+                      <button class="btn btn-danger btn-sm rounded-circle" @click="removeItem(index)" style="width:32px;height:32px;padding:0;">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="3" class="text-end fw-bold">รวมค่ามัดจำทั้งสิ้น</td>
+                    <td class="fw-bold text-primary">{{ totalDeposit.toLocaleString() }} บาท</td>
+                    <td colspan="2" class="fw-bold">({{ totalDepositText }} บาทถ้วน)</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- ปุ่มบันทึกและพิมพ์ -->
+            <div class="text-center mt-4">
+              <button class="btn btn-success btn-lg me-2" @click="saveData">
+                <i class="fas fa-save me-2"></i>บันทึกข้อมูล
+              </button>
+              <button class="btn btn-secondary btn-lg" @click="printForm">
+                <i class="fas fa-print me-2"></i>พิมพ์เอกสาร
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           VIEW 2: รายงาน
+           ============================================================ -->
+      <div v-show="currentView === 'report'" class="fade-in-up">
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i>รายงานการยืมครุภัณฑ์ทางการแพทย์</h4>
+            <button class="btn btn-outline-light btn-sm" @click="loadReport">
+              <i class="fas fa-sync-alt me-1"></i>รีเฟรชข้อมูล
+            </button>
+          </div>
+          <div class="card-body p-4">
+            <div v-if="isLoading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-3 text-muted">กำลังดึงข้อมูล...</p>
+            </div>
+            <div v-else-if="records.length === 0" class="text-center py-5 text-muted">
+              <i class="fas fa-folder-open fa-3x mb-3"></i>
+              <p>ไม่พบข้อมูลการยืม</p>
+            </div>
+            <div v-else class="table-responsive">
+              <table class="table table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <th>ลำดับ</th>
+                    <th>วันที่ยืม</th>
+                    <th>ชื่อผู้ป่วย</th>
+                    <th>HN</th>
+                    <th>ชื่อผู้ยืม</th>
+                    <th>รายการที่ยืม</th>
+                    <th>ยอดรวม (บาท)</th>
+                    <th>สถานะ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="record in records" :key="record.id">
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.patientName }}</td>
+                    <td>{{ record.hn }}</td>
+                    <td>{{ record.borrowerName }}</td>
+                    <td><small>{{ record.itemsSummary || '-' }}</small></td>
+                    <td class="text-end">{{ record.totalDeposit.toLocaleString() }}</td>
+                    <td class="text-center">
+                      <span class="badge" :class="record.status === 'ยังไม่ได้คืน' ? 'bg-warning' : 'bg-success'">
+                        {{ record.status }}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-info btn-sm" @click="viewDetails(record)">
+                        <i class="fas fa-search me-1"></i>ดูรายละเอียด
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           VIEW 3: ส่งคืนครุภัณฑ์
+           ============================================================ -->
+      <div v-show="currentView === 'return'" class="fade-in-up">
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-undo-alt me-2"></i>ส่งคืนครุภัณฑ์ทางการแพทย์</h4>
+            <button class="btn btn-outline-light btn-sm" @click="loadReturnPage">
+              <i class="fas fa-sync-alt me-1"></i>รีเฟรชข้อมูล
+            </button>
+          </div>
+          <div class="card-body p-4">
+            <div class="alert alert-info border-0 rounded-3">
+              <i class="fas fa-info-circle me-2"></i>รายการที่แสดงเป็นเฉพาะรายการที่ <strong>ยังไม่ได้คืน</strong> เท่านั้น
+            </div>
+            <div v-if="isLoading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-3 text-muted">กำลังดึงข้อมูล...</p>
+            </div>
+            <div v-else-if="unreturnedRecords.length === 0" class="text-center py-5 text-muted">
+              <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+              <p>ไม่มีรายการที่ต้องส่งคืน (ทุกรายการคืนแล้ว)</p>
+            </div>
+            <div v-else class="table-responsive">
+              <table class="table table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <th>ลำดับ</th>
+                    <th>วันที่ยืม</th>
+                    <th>ชื่อผู้ป่วย</th>
+                    <th>HN</th>
+                    <th>ชื่อผู้ยืม</th>
+                    <th>รายการที่ยืม</th>
+                    <th>ยอดรวม (บาท)</th>
+                    <th>สถานะ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="record in unreturnedRecords" :key="record.id">
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.patientName }}</td>
+                    <td>{{ record.hn }}</td>
+                    <td>{{ record.borrowerName }}</td>
+                    <td><small>{{ record.itemsSummary || '-' }}</small></td>
+                    <td class="text-end">{{ record.totalDeposit.toLocaleString() }}</td>
+                    <td class="text-center">
+                      <span class="badge bg-warning">{{ record.status }}</span>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-warning btn-sm" @click="openReturnModal(record)">
+                        <i class="fas fa-undo me-1"></i>ส่งคืน
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Footer
+         ============================================================ -->
+    <footer class="footer no-print">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+            <p class="mb-0">
+              <i class="fas fa-hospital me-2"></i>โรงพยาบาลบ่อพลอย จังหวัดกาญจนบุรี
+            </p>
+            <small>ระบบยืมครุภัณฑ์ทางการแพทย์ &copy; 2026</small>
+          </div>
+          <div class="col-md-6 text-center text-md-end">
+            <a href="https://github.com/sonych995-byte/Medical-Equipment-Loan-System" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="github-link">
+              <i class="fab fa-github fa-lg"></i>
+              <span>View on GitHub</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ============================================================
+         Modal เลือกครุภัณฑ์
+         ============================================================ -->
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary">
+            <h5 class="modal-title text-white"><i class="fas fa-boxes me-2"></i>เลือกครุภัณฑ์ทางการแพทย์</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div v-for="item in catalog" :key="item.id" class="border rounded-3 p-3 mb-3" style="border-color: var(--border-color) !important;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0 fw-semibold">{{ item.name }}</h6>
+                  <small class="text-muted">ค่ามัดจำ {{ item.price }} บาท/หน่วย</small>
+                </div>
+                <div class="d-flex align-items-center">
+                  <button class="btn btn-outline-danger btn-plus-minus me-2 rounded-circle" @click="decreaseQty(item)">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <input type="number" class="form-control text-center" style="width: 70px;" v-model.number="item.qty" @input="updateQty(item)" min="0">
+                  <button class="btn btn-outline-success btn-plus-minus ms-2 rounded-circle" @click="increaseQty(item)">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div v-if="item.qty > 0" class="mt-3 row g-2">
+                <div v-for="n in item.qty" :key="n" class="col-md-6">
+                  <label class="form-label small mb-1">เลขครุภัณฑ์ชิ้นที่ {{ n }}</label>
+                  <input type="text" class="form-control form-control-sm" v-model="item.equipmentNumbers[n-1]" placeholder="ไม่เกิน 20 ตัว" maxlength="20">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+            <button type="button" class="btn btn-primary" @click="confirmSelection">
+              <i class="fas fa-check me-1"></i>ยืนยันรายการ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Modal ดูรายละเอียด
+         ============================================================ -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-info">
+            <h5 class="modal-title text-white"><i class="fas fa-file-invoice me-2"></i>รายละเอียดการยืม</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" v-if="selectedRecord">
+            <div v-if="hasIncompleteData" class="alert alert-warning d-flex justify-content-between align-items-center border-0 rounded-3">
+              <div>
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>พบข้อมูลที่ขาดหาย</strong> - กรุณาเพิ่มข้อมูลให้ครบถ้วน
+              </div>
+              <button class="btn btn-warning btn-sm" @click="openEditModal">
+                <i class="fas fa-edit me-1"></i>เพิ่ม/แก้ไข
+              </button>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <p><strong>วันที่ยืม:</strong> {{ selectedRecord.date }}</p>
+                <p><strong>ชื่อ-นามสกุลผู้ป่วย:</strong> {{ selectedRecord.patientName || '-' }}</p>
+                <p><strong>รหัสผู้ป่วย (HN):</strong> {{ selectedRecord.hn || '-' }}</p>
+                <p><strong>ชื่อ-นามสกุลผู้ยืม:</strong> {{ selectedRecord.borrowerName || '-' }}</p>
+                <p><strong>ความสัมพันธ์:</strong> {{ selectedRecord.relationship || '-' }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>ที่อยู่:</strong> {{ selectedRecord.address || '-' }}</p>
+                <p><strong>เบอร์โทรศัพท์:</strong> {{ selectedRecord.phone || '-' }}</p>
+                <p><strong>สถานะ:</strong>
+                  <span class="badge" :class="selectedRecord.status === 'ยังไม่ได้คืน' ? 'bg-warning' : 'bg-success'">
+                    {{ selectedRecord.status }}
+                  </span>
+                </p>
+                <p v-if="selectedRecord.status === 'คืนแล้ว'">
+                  <strong>วันที่คืน:</strong> {{ selectedRecord.returnDate }}<br>
+                  <strong>ผู้รับ:</strong> {{ selectedRecord.receiver }}
+                </p>
+              </div>
+            </div>
+
+            <div v-if="selectedRecord.patientIdImage || selectedRecord.borrowerIdImage" class="row mb-3">
+              <div class="col-md-6" v-if="selectedRecord.patientIdImage">
+                <label class="form-label">รูปบัตรประชาชนผู้ป่วย</label>
+                <a :href="getDriveUrl(selectedRecord.patientIdImage)" target="_blank">
+                  <img :src="getThumbnailUrl(selectedRecord.patientIdImage)" class="img-fluid rounded-3 border" style="max-height: 200px;">
+                </a>
+              </div>
+              <div class="col-md-6" v-if="selectedRecord.borrowerIdImage">
+                <label class="form-label">รูปบัตรประชาชนผู้ยืม</label>
+                <a :href="getDriveUrl(selectedRecord.borrowerIdImage)" target="_blank">
+                  <img :src="getThumbnailUrl(selectedRecord.borrowerIdImage)" class="img-fluid rounded-3 border" style="max-height: 200px;">
+                </a>
+              </div>
+            </div>
+
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th>ลำดับ</th>
+                  <th>รายการ</th>
+                  <th>จำนวน</th>
+                  <th>ค่ามัดจำ/หน่วย</th>
+                  <th>เลขครุภัณฑ์</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="!selectedRecord.items || selectedRecord.items.length === 0">
+                  <td colspan="5" class="text-center text-muted">ไม่มีรายการครุภัณฑ์</td>
+                </tr>
+                <tr v-for="(item, index) in selectedRecord.items" :key="index">
+                  <td>{{ index + 1 }}</td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.qty }}</td>
+                  <td>{{ item.price }}</td>
+                  <td>{{ item.equipmentNumbers.join(', ') }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-end fw-bold">รวมค่ามัดจำทั้งสิ้น</td>
+                  <td colspan="2" class="fw-bold">{{ selectedRecord.totalDeposit }} บาท ({{ getThaiBahtText(selectedRecord.totalDeposit) }} บาทถ้วน)</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+            <button type="button" class="btn btn-primary" @click="printRecord">
+              <i class="fas fa-print me-1"></i>พิมพ์เอกสารนี้
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Modal แก้ไขข้อมูล
+         ============================================================ -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title text-white"><i class="fas fa-edit me-2"></i>เพิ่ม/แก้ไขข้อมูลที่ขาดหาย</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">ชื่อ-นามสกุลผู้ป่วย</label>
+                <input type="text" class="form-control" v-model="editForm.patientName">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">รหัสผู้ป่วย (HN)</label>
+                <input type="text" class="form-control" v-model="editForm.hn">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">ชื่อ-นามสกุลผู้ยืม</label>
+                <input type="text" class="form-control" v-model="editForm.borrowerName">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">ความสัมพันธ์กับผู้ป่วย</label>
+                <select class="form-select" v-model="editForm.relationship">
+                  <option value="">-- เลือกความสัมพันธ์ --</option>
+                  <option v-for="rel in relationships" :key="rel" :value="rel">{{ rel }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">ที่อยู่</label>
+                <input type="text" class="form-control" v-model="editForm.address">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">เบอร์โทรศัพท์ผู้ยืม</label>
+                <input type="text" class="form-control" v-model="editForm.phone" @input="formatEditPhone">
+              </div>
+            </div>
+
+            <hr class="my-4">
+            <h6 class="mb-3"><i class="fas fa-id-card me-2 text-primary"></i>รูปบัตรประชาชน</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">บัตรประชาชนผู้ป่วย</label>
+                <div class="image-upload-box" @click="triggerEditFileInput('patient')">
+                  <input type="file" ref="editPatientFileInput" accept="image/*"
+                         :capture="isMobile ? 'environment' : null"
+                         @change="onEditFileSelect($event, 'patient')" style="display: none;">
+                  <div v-if="!editForm.patientIdImage">
+                    <i class="fas fa-camera fa-3x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">{{ isMobile ? 'แตะเพื่อถ่ายรูป' : 'คลิกเพื่อเลือกรูป' }}</p>
+                  </div>
+                  <div v-else class="position-relative">
+                    <img :src="editForm.patientIdImage" class="image-preview">
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                            @click.stop="clearEditImage('patient')" type="button" style="width:32px;height:32px;padding:0;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">บัตรประชาชนผู้ยืม</label>
+                <div class="image-upload-box" @click="triggerEditFileInput('borrower')">
+                  <input type="file" ref="editBorrowerFileInput" accept="image/*"
+                         :capture="isMobile ? 'environment' : null"
+                         @change="onEditFileSelect($event, 'borrower')" style="display: none;">
+                  <div v-if="!editForm.borrowerIdImage">
+                    <i class="fas fa-camera fa-3x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">{{ isMobile ? 'แตะเพื่อถ่ายรูป' : 'คลิกเพื่อเลือกรูป' }}</p>
+                  </div>
+                  <div v-else class="position-relative">
+                    <img :src="editForm.borrowerIdImage" class="image-preview">
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                            @click.stop="clearEditImage('borrower')" type="button" style="width:32px;height:32px;padding:0;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+            <h6 class="mb-3"><i class="fas fa-boxes me-2 text-primary"></i>รายการครุภัณฑ์</h6>
+            <div v-for="item in editCatalog" :key="item.id" class="border rounded-3 p-3 mb-3" style="border-color: var(--border-color) !important;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0 fw-semibold">{{ item.name }}</h6>
+                  <small class="text-muted">ค่ามัดจำ {{ item.price }} บาท/หน่วย</small>
+                </div>
+                <div class="d-flex align-items-center">
+                  <button class="btn btn-outline-danger btn-plus-minus me-2 rounded-circle" @click="editDecreaseQty(item)">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <input type="number" class="form-control text-center" style="width: 70px;" v-model.number="item.qty" @input="editUpdateQty(item)" min="0">
+                  <button class="btn btn-outline-success btn-plus-minus ms-2 rounded-circle" @click="editIncreaseQty(item)">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div v-if="item.qty > 0" class="mt-3 row g-2">
+                <div v-for="n in item.qty" :key="n" class="col-md-6">
+                  <label class="form-label small mb-1">เลขครุภัณฑ์ชิ้นที่ {{ n }}</label>
+                  <input type="text" class="form-control form-control-sm" v-model="item.equipmentNumbers[n-1]" placeholder="ไม่เกิน 20 ตัว" maxlength="20">
+                </div>
+              </div>
+            </div>
+            <div class="text-end border-top pt-3">
+              <h6>รวมค่ามัดจำทั้งสิ้น: <span class="text-primary fw-bold">{{ editTotalDeposit.toLocaleString() }} บาท</span></h6>
+              <small class="text-muted">({{ getThaiBahtText(editTotalDeposit) }} บาทถ้วน)</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+            <button type="button" class="btn btn-success" @click="saveEdit">
+              <i class="fas fa-save me-1"></i>บันทึกข้อมูล
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Modal บันทึกการคืน
+         ============================================================ -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title text-white"><i class="fas fa-undo-alt me-2"></i>บันทึกการส่งคืนครุภัณฑ์</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" v-if="returningRecord">
+            <div class="alert alert-light border rounded-3">
+              <p class="mb-1"><strong>ผู้ยืม:</strong> {{ returningRecord.borrowerName }}</p>
+              <p class="mb-1"><strong>ผู้ป่วย:</strong> {{ returningRecord.patientName }} (HN: {{ returningRecord.hn }})</p>
+              <p class="mb-0"><strong>ยอดรวม:</strong> {{ returningRecord.totalDeposit.toLocaleString() }} บาท</p>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">วัน เดือน ปี ที่คืน <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" v-model="returnForm.returnDate">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">ผู้รับครุภัณฑ์ <span class="text-danger">*</span></label>
+              <select class="form-select" v-model="returnForm.receiver">
+                <option value="">-- เลือกผู้รับครุภัณฑ์ --</option>
+                <option v-for="r in receivers" :key="r" :value="r">{{ r }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+            <button type="button" class="btn btn-success" @click="saveReturnInfo">
+              <i class="fas fa-check me-1"></i>บันทึกการคืน
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Modal แจ้งผลสำเร็จ
+         ============================================================ -->
+    <div class="modal fade" id="successReturnModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success">
+            <h5 class="modal-title text-white"><i class="fas fa-check-circle me-2"></i>บันทึกการคืนสำเร็จ</h5>
+          </div>
+          <div class="modal-body text-center py-4">
+            <div class="mb-3">
+              <i class="fas fa-check-circle text-success" style="font-size: 64px;"></i>
+            </div>
+            <p class="mb-0">ต้องการพิมพ์ <strong>แบบส่งคืนครุภัณฑ์</strong> หรือไม่?</p>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+            <button type="button" class="btn btn-primary" @click="printReturnForm">
+              <i class="fas fa-print me-1"></i>พิมพ์แบบส่งคืน
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Print Area: ใบยืม
+         ============================================================ -->
+    <div class="print-area" v-if="printData && printMode === 'borrow'">
+      <div style="text-align: center; margin-bottom: 10px;">
+        <h3 style="margin: 0; font-weight: bold; font-size: 17pt;">โรงพยาบาลบ่อพลอย จังหวัดกาญจนบุรี</h3>
+        <h3 style="margin: 3px 0; font-weight: bold; font-size: 17pt;">ใบยืมครุภัณฑ์ทางการแพทย์</h3>
+      </div>
+      <div style="text-align: right; margin-bottom: 15px; font-size: 13pt;">วันที่ {{ printData.date }}</div>
+      <div style="margin-bottom: 10px; font-size: 13pt; line-height: 1.8;">
+        <div style="display: flex; align-items: flex-end;">
+          <div style="white-space: nowrap; width: 160px;">ชื่อ-นามสกุลผู้ป่วย</div>
+          <div style="flex: 1; border-bottom: 1px dotted black; padding-left: 5px;">{{ printData.patientName }}</div>
+        </div>
+        <div style="display: flex; align-items: flex-end; margin-top: 3px;">
+          <div style="white-space: nowrap; width: 160px;">รหัสผู้ป่วย (HN)</div>
+          <div style="flex: 1; border-bottom: 1px dotted black; padding-left: 5px;">{{ printData.hn }}</div>
+        </div>
+      </div>
+      <div style="margin-bottom: 15px; font-size: 13pt; line-height: 1.8;">
+        <div style="display: flex; align-items: flex-end; margin-top: 3px;">
+          <div style="white-space: nowrap; width: 160px;">ชื่อ-นามสกุลผู้ยืม</div>
+          <div style="flex: 1; border-bottom: 1px dotted black; padding-left: 5px;">{{ printData.borrowerName }}</div>
+        </div>
+        <div style="display: flex; align-items: flex-end; margin-top: 3px;">
+          <div style="white-space: nowrap; width: 160px;">ความสัมพันธ์กับผู้ป่วย</div>
+          <div style="flex: 1; border-bottom: 1px dotted black; padding-left: 5px;">{{ printData.relationship }}</div>
+        </div>
+        <div style="display: flex; align-items: flex-end; margin-top: 3px;">
+          <div style="white-space: nowrap; width: 160px;">ที่อยู่</div>
+          <div style="flex: 1; border-bottom: 1px dotted black; padding-left: 5px;">{{ printData.address || '' }}</div>
+        </div>
+        <div style="display: flex; align-items: flex-end; margin-top: 3px;">
+          <div style="white-space: nowrap; width: 160px;">เบอร์โทรศัพท์ผู้ยืม</div>
+          <div style="flex: 1; border-bottom: 1px dotted black; padding-left: 5px;">{{ printData.phone || '' }}</div>
+        </div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; text-align: center; font-size: 13pt;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid black; padding: 6px; width: 8%; font-weight: normal;">ลำดับ</th>
+            <th style="border: 1px solid black; padding: 6px; width: 32%; font-weight: normal;">รายการครุภัณฑ์ทางการแพทย์</th>
+            <th style="border: 1px solid black; padding: 6px; width: 10%; font-weight: normal;">จำนวน</th>
+            <th style="border: 1px solid black; padding: 6px; width: 17%; font-weight: normal;">อัตราค่ามัดจำ<br>(บาท)</th>
+            <th style="border: 1px solid black; padding: 6px; width: 33%; font-weight: normal;">เลขครุภัณฑ์</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in catalog" :key="item.id">
+            <td style="border: 1px solid black; padding: 6px;">{{ index + 1 }}</td>
+            <td style="border: 1px solid black; padding: 6px; text-align: left;">{{ item.name }}</td>
+            <td style="border: 1px solid black; padding: 6px;">{{ getPrintQty(item.id) }}</td>
+            <td style="border: 1px solid black; padding: 6px;">{{ item.price.toLocaleString() }}</td>
+            <td style="border: 1px solid black; padding: 6px; word-break: break-all;">{{ getPrintEquipNumbers(item.id) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="text-align: center; margin-bottom: 20px; font-size: 13pt; line-height: 1.8;">
+        <div style="display: flex; align-items: flex-end; justify-content: center;">
+          <div>รวมค่ามัดจำทั้งสิ้น</div>
+          <div style="width: 140px; border-bottom: 1px dotted black; text-align: center; margin: 0 10px;">{{ printData.totalDeposit }}</div>
+          <div>บาท</div>
+        </div>
+        <div style="text-align: center; margin-top: 3px;">({{ getThaiBahtText(printData.totalDeposit) }} บาทถ้วน)</div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 25px; font-size: 13pt; text-align: center;">
+        <div style="width: 45%;">
+          <div style="margin-bottom: 15px;">ลงชื่อผู้ยืมครุภัณฑ์</div>
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; height: 15px;"></div>
+          <div>(...................................................)</div>
+          <div style="margin-top: 10px;">วันที่ ......../......../........</div>
+        </div>
+        <div style="width: 45%;">
+          <div style="margin-bottom: 15px;">ลงชื่อเจ้าหน้าที่ผู้ให้ยืมครุภัณฑ์</div>
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; height: 15px;"></div>
+          <div>(...................................................)</div>
+          <div style="margin-top: 10px;">ตำแหน่ง...................................................</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Print Area: แบบส่งคืน
+         ============================================================ -->
+    <div class="print-area" v-if="printData && printMode === 'return'">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <h3 style="margin: 0; font-weight: bold; font-size: 18pt;">แบบส่งคืนครุภัณฑ์</h3>
+      </div>
+      <div style="text-align: right; margin-bottom: 5px; font-size: 13pt;">
+        เลขที่ {{ printData.id }}/{{ printData.returnYearBE }}
+      </div>
+      <div style="text-align: right; margin-bottom: 20px; font-size: 13pt;">
+        วันที่ {{ printData.returnDay }} เดือน {{ printData.returnMonth }} พ.ศ. {{ printData.returnYearBE }}
+      </div>
+      <div style="font-size: 13pt; line-height: 2; margin-bottom: 5px;">
+        ข้าพเจ้า {{ printData.borrowerName }}
+      </div>
+      <div style="font-size: 13pt; line-height: 1.8; margin-bottom: 15px;">
+        มีความประสงค์ขอส่งคืนครุภัณฑ์ ตามรายการดังต่อไปนี้<br>
+        และมีความประสงค์ขอรับเงินมัดจำคืนตามใบเสร็จรับเงินและสำเนาบัตรประจำตัวประชาชนที่แนบมาพร้อมนี้
+      </div>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; text-align: center; font-size: 13pt;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid black; padding: 8px; width: 10%; font-weight: normal;">ลำดับที่</th>
+            <th style="border: 1px solid black; padding: 8px; width: 35%; font-weight: normal;">รายการครุภัณฑ์</th>
+            <th style="border: 1px solid black; padding: 8px; width: 25%; font-weight: normal;">หมายเลขครุภัณฑ์</th>
+            <th style="border: 1px solid black; padding: 8px; width: 10%; font-weight: normal;">จำนวน</th>
+            <th style="border: 1px solid black; padding: 8px; width: 20%; font-weight: normal;">จำนวนเงิน</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in printData.items" :key="index">
+            <td style="border: 1px solid black; padding: 8px; text-align: center;">{{ index + 1 }}</td>
+            <td style="border: 1px solid black; padding: 8px;">{{ item.name }}</td>
+            <td style="border: 1px solid black; padding: 8px;">{{ item.equipmentNumbers.join(', ') }}</td>
+            <td style="border: 1px solid black; padding: 8px; text-align: center;">{{ item.qty }}</td>
+            <td style="border: 1px solid black; padding: 8px; text-align: right;">{{ (item.price * item.qty).toLocaleString() }}</td>
+          </tr>
+          <tr v-if="!printData.items || printData.items.length === 0">
+            <td colspan="5" style="border: 1px solid black; padding: 15px; text-align: center; color: #999;">- ไม่มีรายการ -</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size: 13pt; line-height: 2; margin-bottom: 5px;">
+        จำนวนเงิน {{ printData.totalDeposit.toLocaleString() }} บาท
+      </div>
+      <div style="font-size: 13pt; line-height: 2; margin-bottom: 30px;">
+        ({{ getThaiBahtText(printData.totalDeposit) }}บาทถ้วน)
+      </div>
+      <div style="text-align: right; font-size: 13pt; margin-bottom: 30px; padding-right: 30px;">
+        <div style="display: inline-block; text-align: center; min-width: 320px;">
+          <div>(ลงชื่อ)................................................... (ผู้ส่งคืน)</div>
+          <div style="margin-top: 8px;">( {{ printData.borrowerName }} )</div>
+          <div v-if="printData.address" style="margin-top: 3px;">( {{ printData.address }} )</div>
+        </div>
+      </div>
+      <div style="font-size: 13pt; line-height: 2; margin-bottom: 30px;">
+        ข้าพเจ้าได้ตรวจสอบและรับคืนครุภัณฑ์ตามที่ขอส่งคืนครบถ้วนตามรายการข้างต้นแล้ว
+      </div>
+      <div style="text-align: right; font-size: 13pt; padding-right: 30px;">
+        <div style="display: inline-block; text-align: center; min-width: 320px;">
+          <div>(ลงชื่อ)................................................... (ผู้รับครุภัณฑ์)</div>
+          <div style="margin-top: 8px;">( {{ printData.receiver }} )</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Scripts
+       ============================================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const { createApp, ref, computed } = Vue;
+
+    createApp({
+      setup() {
+        const currentView = ref('form');
+        const isLoading = ref(false);
+        const records = ref([]);
+        const selectedRecord = ref(null);
+        const returningRecord = ref(null);
+        const printData = ref(null);
+        const printMode = ref('borrow');
+        const returnForm = ref({ returnDate: '', receiver: '' });
+
+        const patientFileInput = ref(null);
+        const borrowerFileInput = ref(null);
+        const editPatientFileInput = ref(null);
+        const editBorrowerFileInput = ref(null);
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        const receivers = [
+          'นางฐิติชญาน์  กมลปิตุลารัตน์',
+          'นายสุทธา  สุทธิมณี',
+          'นางสาววราภรณ์  ตระกูลโอสถ'
+        ];
+
+        const form = ref({
+          date: '', patientName: '', hn: '', borrowerName: '',
+          relationship: '', address: '', phone: '',
+          patientIdImage: '', borrowerIdImage: ''
+        });
+
+        const relationships = ['บิดา', 'มารดา', 'บุตร', 'คู่สมรส', 'ญาติ'];
+
+        const catalog = ref([
+          { id: 'bed', name: 'เตียงผู้ป่วย', price: 500, qty: 0, equipmentNumbers: [] },
+          { id: 'air_mattress', name: 'ที่นอนลม', price: 500, qty: 0, equipmentNumbers: [] },
+          { id: 'oxygen_concentrator', name: 'เครื่องผลิตออกซิเจน', price: 1000, qty: 0, equipmentNumbers: [] },
+          { id: 'oxygen_tank', name: 'ถังออกซิเจน', price: 1000, qty: 0, equipmentNumbers: [] },
+          { id: 'oxygen_gauge', name: 'เกย์ออกซิเจน', price: 1000, qty: 0, equipmentNumbers: [] },
+          { id: 'suction_machine', name: 'เครื่องดูดเสมหะ', price: 1000, qty: 0, equipmentNumbers: [] }
+        ]);
+
+        const selectedItems = ref([]);
+        const editForm = ref({
+          patientName: '', hn: '', borrowerName: '', relationship: '',
+          address: '', phone: '', patientIdImage: '', borrowerIdImage: ''
+        });
+        const editCatalog = ref([]);
+
+        const getTodayBE = () => {
+          const now = new Date();
+          const dd = String(now.getDate()).padStart(2, '0');
+          const mm = String(now.getMonth() + 1).padStart(2, '0');
+          const yyyy = now.getFullYear() + 543;
+          return dd + '/' + mm + '/' + yyyy;
+        };
+
+        form.value.date = getTodayBE();
+
+        const unreturnedRecords = computed(() => records.value.filter(r => r.status === 'ยังไม่ได้คืน'));
+        const totalDeposit = computed(() => selectedItems.value.reduce((sum, item) => sum + (item.price * item.qty), 0));
+        const totalDepositText = computed(() => ThaiBahtText(totalDeposit.value));
+
+        const hasIncompleteData = computed(() => {
+          const r = selectedRecord.value;
+          if (!r) return false;
+          if (!r.patientName || !r.hn || !r.borrowerName || !r.relationship || !r.address || !r.phone) return true;
+          if (!r.items || r.items.length === 0) return true;
+          return false;
+        });
+
+        const editTotalDeposit = computed(() => editCatalog.value.reduce((sum, item) => sum + (item.price * item.qty), 0));
+
+        // ============== ระบบรูปภาพ ==============
+        const triggerFileInput = (type) => {
+          if (type === 'patient' && patientFileInput.value) patientFileInput.value.click();
+          if (type === 'borrower' && borrowerFileInput.value) borrowerFileInput.value.click();
+        };
+
+        const triggerEditFileInput = (type) => {
+          if (type === 'patient' && editPatientFileInput.value) editPatientFileInput.value.click();
+          if (type === 'borrower' && editBorrowerFileInput.value) editBorrowerFileInput.value.click();
+        };
+
+        const compressImage = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX = 1200;
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+                else { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+              };
+              img.onerror = reject;
+              img.src = e.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        };
+
+        const onFileSelect = async (event, type) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          try {
+            const compressed = await compressImage(file);
+            if (type === 'patient') form.value.patientIdImage = compressed;
+            else form.value.borrowerIdImage = compressed;
+          } catch (e) {
+            Swal.fire('ผิดพลาด', 'ไม่สามารถอ่านไฟล์รูปได้', 'error');
+          }
+          event.target.value = '';
+        };
+
+        const onEditFileSelect = async (event, type) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          try {
+            const compressed = await compressImage(file);
+            if (type === 'patient') editForm.value.patientIdImage = compressed;
+            else editForm.value.borrowerIdImage = compressed;
+          } catch (e) {
+            Swal.fire('ผิดพลาด', 'ไม่สามารถอ่านไฟล์รูปได้', 'error');
+          }
+          event.target.value = '';
+        };
+
+        const clearImage = (type) => {
+          if (type === 'patient') form.value.patientIdImage = '';
+          else form.value.borrowerIdImage = '';
+        };
+
+        const clearEditImage = (type) => {
+          if (type === 'patient') editForm.value.patientIdImage = '';
+          else editForm.value.borrowerIdImage = '';
+        };
+
+        const getDriveUrl = (fileId) => 'https://drive.google.com/file/d/' + fileId + '/view';
+        const getThumbnailUrl = (fileId) => 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w500';
+
+        // ============== ฟังก์ชันโหลดข้อมูล ==============
+        const loadReport = () => {
+          currentView.value = 'report';
+          isLoading.value = true;
+          records.value = [];
+          google.script.run.withSuccessHandler((data) => {
+            isLoading.value = false;
+            if (data.error) Swal.fire('ผิดพลาด', data.error, 'error');
+            else records.value = data;
+          }).getRecords();
+        };
+
+        const loadReturnPage = () => {
+          currentView.value = 'return';
+          isLoading.value = true;
+          records.value = [];
+          google.script.run.withSuccessHandler((data) => {
+            isLoading.value = false;
+            if (data.error) Swal.fire('ผิดพลาด', data.error, 'error');
+            else records.value = data;
+          }).getRecords();
+        };
+
+        const silentRefresh = () => {
+          google.script.run.withSuccessHandler((data) => {
+            if (!data.error) records.value = data;
+          }).getRecords();
+        };
+
+        const viewDetails = (record) => {
+          selectedRecord.value = record;
+          new bootstrap.Modal(document.getElementById('detailModal')).show();
+        };
+
+        const openEditModal = () => {
+          if (!selectedRecord.value) return;
+          const r = selectedRecord.value;
+          editForm.value = {
+            patientName: r.patientName || '', hn: r.hn || '',
+            borrowerName: r.borrowerName || '', relationship: r.relationship || '',
+            address: r.address || '', phone: r.phone || '',
+            patientIdImage: r.patientIdImage ? getThumbnailUrl(r.patientIdImage) : '',
+            borrowerIdImage: r.borrowerIdImage ? getThumbnailUrl(r.borrowerIdImage) : ''
+          };
+          editCatalog.value = catalog.value.map(c => ({ ...c, qty: 0, equipmentNumbers: [] }));
+          if (r.items && r.items.length > 0) {
+            r.items.forEach(recItem => {
+              const catItem = editCatalog.value.find(c => c.id === recItem.id);
+              if (catItem) {
+                catItem.qty = recItem.qty;
+                catItem.equipmentNumbers = [...recItem.equipmentNumbers];
+              }
+            });
+          }
+          hideModal('detailModal');
+          setTimeout(() => { new bootstrap.Modal(document.getElementById('editModal')).show(); }, 300);
+        };
+
+        const editIncreaseQty = (item) => { item.qty++; item.equipmentNumbers.push(''); };
+        const editDecreaseQty = (item) => { if (item.qty > 0) { item.qty--; item.equipmentNumbers.pop(); } };
+        const editUpdateQty = (item) => {
+          let val = parseInt(item.qty) || 0;
+          if (val < 0) val = 0;
+          item.qty = val;
+          while (item.equipmentNumbers.length < val) item.equipmentNumbers.push('');
+          while (item.equipmentNumbers.length > val) item.equipmentNumbers.pop();
+        };
+        const formatEditPhone = (e) => {
+          let val = e.target.value.replace(/\D/g, '');
+          if (val.length > 10) val = val.slice(0, 10);
+          if (val.length > 6) val = val.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+          else if (val.length > 3) val = val.replace(/(\d{3})(\d{0,3})/, '$1 $2');
+          editForm.value.phone = val;
+          e.target.value = val;
+        };
+
+        const saveEdit = () => {
+          if (!editForm.value.patientName || !editForm.value.borrowerName) {
+            Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อผู้ป่วยและชื่อผู้ยืม', 'warning');
+            return;
+          }
+          const items = editCatalog.value.filter(i => i.qty > 0).map(i => ({ ...i }));
+          if (items.length === 0) {
+            Swal.fire('แจ้งเตือน', 'กรุณาเลือกครุภัณฑ์อย่างน้อย 1 รายการ', 'warning');
+            return;
+          }
+          const data = {
+            ...editForm.value,
+            items: items,
+            totalDeposit: items.reduce((s, i) => s + i.price * i.qty, 0)
+          };
+          Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+          google.script.run.withSuccessHandler((response) => {
+            if (response.success) {
+              Swal.fire('สำเร็จ', response.message, 'success').then(() => {
+                hideModal('editModal');
+                silentRefresh();
+              });
+            } else Swal.fire('ผิดพลาด', response.message, 'error');
+          }).updateRecordDetails(selectedRecord.value.id, data);
+        };
+
+        // ============== ระบบส่งคืน ==============
+        const openReturnModal = (record) => {
+          returningRecord.value = record;
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          returnForm.value = { returnDate: y + '-' + m + '-' + d, receiver: '' };
+          new bootstrap.Modal(document.getElementById('returnModal')).show();
+        };
+
+        const saveReturnInfo = () => {
+          if (!returnForm.value.returnDate || !returnForm.value.receiver) {
+            Swal.fire('แจ้งเตือน', 'กรุณากรอกวัน เดือน ปี ที่คืน และเลือกผู้รับให้ครบถ้วน', 'warning');
+            return;
+          }
+          Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+          google.script.run.withSuccessHandler((response) => {
+            if (response.success) {
+              prepareReturnPrintData(returnForm.value.returnDate, returnForm.value.receiver);
+              hideModal('returnModal');
+              Swal.close();
+              setTimeout(() => { new bootstrap.Modal(document.getElementById('successReturnModal')).show(); }, 300);
+              silentRefresh();
+            } else Swal.fire('ผิดพลาด', response.message, 'error');
+          }).updateReturnInfo(returningRecord.value.id, returnForm.value.returnDate, returnForm.value.receiver);
+        };
+
+        const prepareReturnPrintData = (returnDateStr, receiver) => {
+          const rec = returningRecord.value;
+          const parts = returnDateStr.split('-');
+          const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+          const day = parseInt(parts[2]);
+          const monthIdx = parseInt(parts[1]) - 1;
+          const yearBE = parseInt(parts[0]) + 543;
+          printData.value = {
+            ...rec,
+            items: rec.items || [],
+            returnDay: day,
+            returnMonth: months[monthIdx],
+            returnYearBE: yearBE,
+            receiver: receiver
+          };
+          printMode.value = 'return';
+        };
+
+        const printReturnForm = () => {
+          hideModal('successReturnModal');
+          setTimeout(() => { window.print(); }, 300);
+        };
+
+        // ============== การพิมพ์ ==============
+        const printForm = () => {
+          if (selectedItems.value.length === 0) {
+            Swal.fire('แจ้งเตือน', 'กรุณาเลือกรายการครุภัณฑ์ก่อนพิมพ์', 'warning');
+            return;
+          }
+          printMode.value = 'borrow';
+          printData.value = { ...form.value };
+          printData.value.items = selectedItems.value;
+          printData.value.totalDeposit = totalDeposit.value;
+          setTimeout(() => { window.print(); }, 100);
+        };
+
+        const printRecord = () => {
+          if (!selectedRecord.value) return;
+          printMode.value = 'borrow';
+          printData.value = {
+            ...selectedRecord.value,
+            items: selectedRecord.value.items || []
+          };
+          hideModal('detailModal');
+          setTimeout(() => { window.print(); }, 300);
+        };
+
+        const getPrintQty = (id) => {
+          if (!printData.value || !printData.value.items) return '';
+          const item = printData.value.items.find(i => i.id === id);
+          return item ? item.qty : '';
+        };
+        const getPrintEquipNumbers = (id) => {
+          if (!printData.value || !printData.value.items) return '';
+          const item = printData.value.items.find(i => i.id === id);
+          return item ? item.equipmentNumbers.join(', ') : '';
+        };
+        const getThaiBahtText = (num) => ThaiBahtText(num);
+
+        const openModal = () => new bootstrap.Modal(document.getElementById('itemModal')).show();
+        const increaseQty = (item) => { item.qty++; item.equipmentNumbers.push(''); };
+        const decreaseQty = (item) => { if (item.qty > 0) { item.qty--; item.equipmentNumbers.pop(); } };
+        const updateQty = (item) => {
+          let val = parseInt(item.qty) || 0;
+          if (val < 0) val = 0;
+          item.qty = val;
+          while (item.equipmentNumbers.length < val) item.equipmentNumbers.push('');
+          while (item.equipmentNumbers.length > val) item.equipmentNumbers.pop();
+        };
+        const confirmSelection = () => {
+          selectedItems.value = catalog.value.filter(item => item.qty > 0).map(item => ({ ...item }));
+          hideModal('itemModal');
+        };
+        const removeItem = (index) => { selectedItems.value.splice(index, 1); };
+
+        const formatPhone = (e) => {
+          let val = e.target.value.replace(/\D/g, '');
+          if (val.length > 10) val = val.slice(0, 10);
+          if (val.length > 6) val = val.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+          else if (val.length > 3) val = val.replace(/(\d{3})(\d{0,3})/, '$1 $2');
+          form.value.phone = val;
+          e.target.value = val;
+        };
+
+        const clearForm = () => {
+          form.value = {
+            date: getTodayBE(),
+            patientName: '', hn: '', borrowerName: '',
+            relationship: '', address: '', phone: '',
+            patientIdImage: '', borrowerIdImage: ''
+          };
+          selectedItems.value = [];
+          catalog.value.forEach(item => {
+            item.qty = 0;
+            item.equipmentNumbers = [];
+          });
+        };
+
+        const saveData = () => {
+          if (!form.value.patientName || !form.value.borrowerName || selectedItems.value.length === 0) {
+            Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลผู้ป่วย ผู้ยืม และเลือกรายการครุภัณฑ์ให้ครบถ้วน', 'warning');
+            return;
+          }
+          const data = { ...form.value, items: selectedItems.value, totalDeposit: totalDeposit.value };
+          Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+          google.script.run.withSuccessHandler((response) => {
+            if (response.success) {
+              Swal.fire('สำเร็จ', response.message, 'success').then(() => {
+                clearForm();
+                silentRefresh();
+              });
+            } else Swal.fire('ผิดพลาด', response.message, 'error');
+          }).saveRecord(data);
+        };
+
+        const ThaiBahtText = (num) => {
+          if (num === 0 || num === undefined || num === null || num === '') return 'ศูนย์';
+          const units = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+          const digits = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+          let result = '', str = num.toString(), len = str.length;
+          for (let i = 0; i < len; i++) {
+            let digit = parseInt(str[i]);
+            let pos = len - i - 1;
+            if (digit !== 0) {
+              if (pos % 6 === 1 && digit === 1) result += 'สิบ';
+              else if (pos % 6 === 1 && digit === 2) result += 'ยี่สิบ';
+              else if (pos % 6 === 0 && digit === 1 && i > 0) result += 'เอ็ด';
+              else result += digits[digit] + units[pos % 6];
+            } else if (pos === 6 && i > 0) result += 'ล้าน';
+          }
+          return result;
+        };
+
+        const hideModal = (id) => {
+          const modalEl = document.getElementById(id);
+          if (!modalEl) return;
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+          else new bootstrap.Modal(modalEl).hide();
+        };
+
+        return {
+          currentView, isLoading, records, unreturnedRecords, selectedRecord, returningRecord,
+          printData, printMode, returnForm, receivers, isMobile,
+          patientFileInput, borrowerFileInput, editPatientFileInput, editBorrowerFileInput,
+          form, relationships, catalog, selectedItems, totalDeposit, totalDepositText,
+          editForm, editCatalog, editTotalDeposit, hasIncompleteData,
+          loadReport, loadReturnPage, viewDetails, openEditModal, saveEdit,
+          editIncreaseQty, editDecreaseQty, editUpdateQty, formatEditPhone,
+          openReturnModal, saveReturnInfo, printReturnForm,
+          printForm, printRecord,
+          getPrintQty, getPrintEquipNumbers, getThaiBahtText,
+          openModal, increaseQty, decreaseQty, updateQty, confirmSelection,
+          removeItem, formatPhone, saveData,
+          triggerFileInput, triggerEditFileInput, onFileSelect, onEditFileSelect,
+          clearImage, clearEditImage, getDriveUrl, getThumbnailUrl
+        };
+      }
+    }).mount('#app');
+  </script>
+
+</body>
+</html>
